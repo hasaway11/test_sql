@@ -1,0 +1,86 @@
+-- 1. INSA 테이블의 인덱스 조회
+-- 2. INSA 테이블에서 기획부 소속이고 도시가 서울인 사원
+-- 3. INSA 테이블에서 도시가 수도권(서울, 경기, 인천)인 사원
+
+select * from user_indexes where table_name='INSA';
+select * from insa where buseo='기획부' and city='서울';
+select * from insa where city in ('서울','경기','인천');
+
+-- 4. INSA 테이블에서 기본급이 200만원이상, 300만원이하인 사원
+-- 5. INSA 테이블에서 모든 사원의 정보와 실수령액을 출력. 실수령액은 기본급과 수당의 합계로 하시오
+-- 6. INSA 테이블에서 도시가 인천이고 기본급이 100~200만원인 사원
+
+select * from insa where basicpay between 2000000 and 3000000;
+select insa.*, insa.basicpay+insa.sudang 실수령액 from insa;
+select * from insa where city='인천' and basicpay between 1000000 and 2000000;
+
+-- 7. 홈페이지를 가진 조교수들을 출력
+-- 8. 2010년 이후 임용된 교수
+-- 9. 복수전공(deptno2)을 이수중인 4학년 학생들
+
+select * from professor where position='조교수' and hpage is not null;
+select * from professor where hiredate>='2010-01-01';
+select * from student where grade=4 and deptno2 is not null;
+
+-- 10. INSA 테이블에서 사번, 이름, 입사한 월을 출력
+-- 11. INSA 테이블에서 실수령액은 기본급과 수당의 합계이다. 실수령액 내림차순으로 사원의 모든 정보와 실수령액을 출력
+-- 12. INSA 테이블에서 상반기에 입사한 사원
+
+select num, name, to_char(ibsadate, 'mm') 입사월 from insa;
+select insa.*, insa.basicpay+insa.sudang 실수령액 from insa order by 실수령액 desc;
+select * from insa where to_char(ibsadate, 'mm') between '1' and '06';
+
+-- 13. emp2에서 정규직이 아닌 사원의 숫자
+-- 14. INSA 테이블에서 직위별 인원수를 인원수 내림차순으로 출력
+-- 15. emp2를 이용해 우리회사의 직급들을 출력하시오
+
+select count(*) from emp2 where emp_type in ('계약직','수습직','인턴직');
+select jikwi, count(*) from insa group by jikwi order by 2 desc;
+select distinct position from emp2 where position is not null;
+
+-- 16. 부서번호, 이름, 근무지, 전화번호로 구성된 buseo 테이블을 작성하시오.
+--     부서번호를 기본키로 하시오
+-- 17. 사번, 이름, 직급, 전화번호, 부서번호로 구성된 jikwon 테이블을 작성하시오
+--     사번을 기본키로, 부서번호를 외래키로 하시오
+-- 18. 글번호, 아이디로 구성된 추천 테이블을 작성하시오
+--     글번호, 아이디를 복합 기본키로 하시오(검색할 것)
+
+create table buseo (
+    bunho number(6),
+    name varchar2(10 char),
+    loc varchar2(10 char),
+    tel varchar2(11 char),
+    constraint buseo_pk_pno primary key(bunho)
+);
+
+create table jikwon (
+    sabun number(6),
+    name varchar2(10 char),
+    position varchar2(10 char),
+    tel varchar2(11 char),
+    buseo number(6),
+    constraint jikwon_pk_pno primary key(sabun),
+    constraint jikwon_fk_sabun foreign key(buseo) references buseo(bunho)
+);
+
+create table recommend (
+    bno number(6),
+    username varchar2(10 char),
+    constraint recommend_pk primary key(bno, username)
+);
+
+-- 19. INSA 테이블에서 기본급 하위 5명
+-- 20. emp에서 실수령액 상위 5명. 실수령액은 sal와 comm의 합으로 하시오
+-- 21. professor에서 조교수 중 최고 급여자 2명 출력
+
+select * from 
+    (select * from insa order by basicpay asc)
+where rownum<=5;
+
+select * from 
+    (select empno, ename, nvl(sal+comm, sal) 실수령액 from emp order by 3 desc)
+where rownum<=5;
+
+select * from 
+    (select * from professor where position='조교수' order by pay desc)
+where rownum<=2;
