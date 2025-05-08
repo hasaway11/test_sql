@@ -1,0 +1,49 @@
+-- emp, dept에서 SALES 부서에 근무하는 사원 출력
+-- emp2, dept2에서 서울지사에 근무하는 과장 출력
+-- emp에서 부서별로 comm이 확정된 근무자의 숫자 출력
+
+select e.* from emp e join dept d on e.deptno=d.deptno where d.dname='SALES';
+select e.* from emp2 e join dept2 d on e.deptno=d.dcode where d.area='서울지사' and e.position='과장';
+select deptno, count(*) from emp where comm is not null group by deptno;
+
+-- student, department에서 임세현 학생의 학과이름(deptno1)
+-- professor, department에서 학과명, 학과별 교수 숫자를 교수숫자 내림차순으로 출력
+-- professor, student에서 학생의 학번, 이름, 지도교수 이름을 출력
+-- student, department에서 복수전공자(deptno2)가 있는 학과들의 이름
+
+select d.dname from department d join student s on d.deptno=s.deptno1 where s.name='임세현';
+select d.dname, count(*) from department d join professor p on d.deptno=p.deptno group by d.dname order by 2 desc;
+select s.studno, s.name, p.name 지도교수 from student s  join professor p on s.profno=p.profno;
+select d.dname from student s join department d on s.deptno2=d.deptno;
+
+
+-- professor, department에서 정교수나 조교수가 없는 학과의 학과번호, 학과명
+-- student, department에서 컴퓨터 공학과(deptno1) 소속으로 복수 전공(depno2)을 하고 있는 학생의 정보
+-- professor, student에서 지도교수의 이름과 담당 학생 숫자 출력
+select d.deptno, d.dname from professor p, department d where d.deptno = p.deptno and p.position not in ('정교수', '조교수');
+select s.* from student s join department d on s.deptno1=d.deptno where d.dname='컴퓨터공학과' and deptno2 is not null;
+select p.name, count(*) from student s  join professor p on s.profno=p.profno group by p.name;
+
+-- emp, salgrade에서 급여등급이 3인 사원들
+-- emp, salgrade에서 급여등급별 인원수
+-- gogak, gift를 이용해 고객이름, 포인트, 사은품 출력
+
+select * from emp e join salgrade s on e.sal between s.losal and s.hisal and s.grade=3;
+select s.grade, count(*) 인원수 from emp e join salgrade s on e.sal between s.losal and s.hisal group by s.grade;
+select g.gname, g.point, gift.gname from gogak g, gift where g.point between g_start and g_end;
+
+
+-- emp, dept에서 부서명과 부서의 인원수를 출력. 인원이 없는 부서도 출력하시오
+-- emp2, dept2에서 최일도 과장을 담당하는 관리자의 직위와 이름을 출력
+-- emp2, dept2에서 관리자의 이름과 담당 인원수를 출력
+select d.dname, count(empno) 인원수 from emp e right outer join dept d on e.deptno=d.deptno group by d.dname;
+select m.position, m.name from emp2 e join emp2 m on e.pempno=m.empno where e.name='최일도';
+select m.name, count(e.empno) from emp2 e join emp2 m on e.pempno=m.empno group by m.name;
+
+-- professor, student에서 지도교수 이름과 담당 학생 숫자를 출력. 담당 학생이 없으면 0명으로 출력
+-- emp에서 관리자가 아닌 사원들의 이름을 출력
+-- department, student에서 복수전공자가 없는 학과들의 학과이름
+
+select p.name, count(s.studno) from student s  right outer join professor p on s.profno=p.profno group by p.name;
+select m.ename from emp e right outer join emp m on e.mgr=m.empno group by m.ename having count(e.empno)=0;
+select d.dname from student s right outer join department d on s.deptno2=d.deptno group by d.dname having count(s.studno)=0;
