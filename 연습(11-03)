@@ -1,0 +1,75 @@
+-- 1. 인사 테이블에서 jikwi를 출력
+-- 2. 인사 테이블에서 buseo가 기획부인 사원을 출력
+-- 3. 인사 테이블에서 서울에 거주하고 기본급이 2000000이상인 사원을 출력
+
+select distinct jikwi from insa;
+select * from insa where buseo='기획부';
+select * from insa where city='서울' and basicpay>=2000000;
+
+-- 4. emp2에서 취미가 '운동','자전거타기','마라톤','수영'인 사원 출력
+-- 5. emp2에서 수도권(서울, 경기, 인천)이 아닌 사원 출력
+-- 6. emp에서 사원 정보와 급여 정보를 출력. 급여는 sal와 comm의 합으로 하고 comm이 확정되지 않은 경우 0으로 처리
+
+select * from emp2 where hobby in ('운동','자전거타기','마라톤','수영');
+select * from insa where city not in ('서울','경기','인천');
+select e.*, nvl(sal+comm, sal) as 급여 from emp e; 
+
+
+-- 7. 인사테이블에서 직위가 부장인 사원의 정보와 급여를 출력. 급여는 기본급과 수당의 합계로 하시오
+-- 8. emp2에서 1970년대에 태어난 사원들의 정보 출력
+-- 9. professor 테이블에서 홈페이지가 없는 교수들 출력
+-- 10. emp2에서 취미가 없는 사원들의 몇명인지 출력
+
+select i.*, basicpay+sudang as 급여 from insa i where jikwi='부장';
+select * from emp2 where birthday between '1970-01-01' and '1979-12-31';
+select * from professor where hpage is null;
+select count(*) from emp2 where hobby is not null;
+
+-- 11. emp2j에서 사번, 이름, 취미를 출력. 취미가 없을 경우 '취미없음'이라고 출력
+-- 12. 인사 테이블의 제약조건 출력
+-- 13. 인사 테이블의 인덱스 출력
+select empno, name, nvl(hobby, '취미없음') as hobby from emp2;
+select * from user_constraints where table_name='INSA';
+select * from user_indexes where table_name='INSA';
+
+-- 14. emp2에서 pay 상위 5명을 출력
+-- 15. 인사 테이블에서 가장 나중에 입사한 사원 출력
+-- 16. 인사 테이블에서 직위가 '대리'인 사원 중 가장 먼저 입사한 사원 출력
+
+select * from (select * from emp2 order by pay desc) where rownum<=5;
+select * from (select * from insa order by ibsadate desc) where rownum<=1;
+select * from (select * from insa where jikwi='대리' order by ibsadate asc) where rownum=1;
+
+
+-- 17. emp2를 이용해 최고급여, 최저급여, 급여 평균을 출력
+-- 18. professor에서 직위(position)별 평균 급여를 출력
+-- 19. emp2에서  취미별 인원수를 출력
+   -- 취미가 없는 경우는 '취미없음'으로 처리
+-- 20. professor에서 bobus를 수령하는, 직위(position)별 인원수를 출력
+
+select max(pay), min(pay), round(avg(pay)) from emp2;
+select position, avg(pay) as avg from professor group by position;
+select nvl(hobby, '취미없음') as hobby, count(*) from emp2 group by hobby;
+select position, count(*) from professor where bonus is not null group by position;
+
+
+-- 21. professor에서 보너스를 수령하는 교수의 직위별 평균 급여를 출력
+-- 22. 인사 테이블에서 급여 상위 5명을 출력. 급여는 기본급과 수당의 합계로 하시오
+-- 23. emp에서 사원이 가장 많은 부서의 부서번호를 출력
+select position, avg(pay) from professor where bonus is not null group by position;
+select * from
+    (select i.*, basicpay+sudang as 급여 from insa i order by 급여 desc)
+where rownum<=5;
+select deptno from 
+    (select deptno, count(*) as cnt from emp group by deptno order by cnt desc)
+where rownum=1;
+
+
+-- 24. emp와 dept를 이용해 DALLAS에서 근무하는 사원들의 job을 출력
+-- 25. emp와 dept를 이용해 근무지(loc), 사번, 이름을 출력
+-- 26. emp와 dept를 이용해 근무지(loc)별 인원수를 출력
+
+select distinct job from emp e join dept d on e.deptno=d.deptno and d.loc='DALLAS';
+select d.loc, e.empno, e.ename from emp e join dept d on e.deptno=d.deptno order by e.sal desc;
+select d.loc, count(*) as cnt from emp e join dept d on e.deptno=d.deptno group by d.loc;
+
